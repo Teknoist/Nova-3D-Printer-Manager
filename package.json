@@ -66,6 +66,9 @@
     "appId": "com.nova3dprintermanager.desktop",
     "productName": "Nova 3D Printer Manager",
     "asar": true,
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**/*"
+    ],
     "directories": {
       "output": "release"
     },

@@ -28,9 +28,9 @@ export async function handleMjpegStream(req: Request, res: Response) {
   if (!stream) {
     // Start ffmpeg
     const rtspUrl = await enableSdcpCamera(printerId)
-    // We use ffmpegMpjpeg instead of raw ffmpeg
-    const ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath as any)?.path ?? 'ffmpeg';
-
+    // We use ffmpegMpjpeg instead of raw ffmpeg. Replace app.asar with app.asar.unpacked since it's an executable
+    let ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath as any)?.path ?? 'ffmpeg';
+    ffmpegCmd = ffmpegCmd.replace('app.asar', 'app.asar.unpacked');
 
     const ffmpegMpjpeg = spawn(ffmpegCmd, [
       '-rtsp_transport', 'tcp',
