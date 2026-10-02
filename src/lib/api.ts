@@ -42,6 +42,18 @@ const previewApi: NovaFleetApi = {
   controlJob: () => ok('Yazdırma durumu değiştirildi.'),
   onUploadProgress: () => () => undefined,
   onPrinterIpUpdated: () => () => undefined,
+  getSettings: async () => {
+    const stored = localStorage.getItem('nova_settings')
+    return stored ? JSON.parse(stored) : { autoSdcpDiscovery: false }
+  },
+  saveSettings: async (settings) => {
+    const stored = localStorage.getItem('nova_settings')
+    const current = stored ? JSON.parse(stored) : {}
+    const merged = { ...current, ...settings }
+    localStorage.setItem('nova_settings', JSON.stringify(merged))
+    return merged
+  },
+  getLocalIps: async () => ['127.0.0.1']
 }
 
 function createPwaApi(): NovaFleetApi {
@@ -94,6 +106,9 @@ function createPwaApi(): NovaFleetApi {
     controlJob: (id, jobId, action) => request('jobs:control', { id, jobId, action }),
     onUploadProgress: () => () => undefined,
     onPrinterIpUpdated: () => () => undefined,
+    getSettings: () => request('settings:get'),
+    saveSettings: (settings) => request('settings:save', settings),
+    getLocalIps: () => request('system:getLocalIps'),
   }
 }
 

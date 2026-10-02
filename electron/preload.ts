@@ -22,7 +22,8 @@ const api: NovaFleetApi = {
     const listener = (_event: Electron.IpcRendererEvent, config: PrinterConfig) => callback(config)
     ipcRenderer.on('printer-ip-updated', listener)
     return () => ipcRenderer.removeListener('printer-ip-updated', listener)
-  }
+  },
+  getLocalIps: () => ipcRenderer.invoke('system:getLocalIps')
 }
 
 contextBridge.exposeInMainWorld('novaFleet', api)

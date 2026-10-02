@@ -52,4 +52,16 @@ export const androidApi: NovaFleetApi = {
     return () => { active = false; if (handle) void handle.remove() }
   },
   onPrinterIpUpdated: () => () => undefined,
+  getSettings: async () => {
+    const stored = localStorage.getItem('nova_settings')
+    return stored ? JSON.parse(stored) : { autoSdcpDiscovery: false }
+  },
+  saveSettings: async (settings) => {
+    const stored = localStorage.getItem('nova_settings')
+    const current = stored ? JSON.parse(stored) : {}
+    const merged = { ...current, ...settings }
+    localStorage.setItem('nova_settings', JSON.stringify(merged))
+    return merged
+  },
+  getLocalIps: async () => []
 }

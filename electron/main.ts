@@ -133,6 +133,19 @@ ipcMain.handle('files:choose-upload', async (event, id: string) => {
 })
 ipcMain.handle('settings:get', () => settingsStore.getSettings())
 ipcMain.handle('settings:save', (_event, settings) => settingsStore.saveSettings(settings))
+ipcMain.handle('system:getLocalIps', () => {
+  const os = require('node:os')
+  const nets = os.networkInterfaces()
+  const results: string[] = []
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]!) {
+      if (net.family === 'IPv4' && !net.internal) {
+        results.push(net.address)
+      }
+    }
+  }
+  return results
+})
 
 if (!hasSingleInstanceLock) {
   app.quit()

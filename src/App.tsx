@@ -161,8 +161,22 @@ function App() {
 
   useEffect(() => {
     void refresh();
-    void api.getSettings().then(setSettings);
+    void api.getSettings().then(async (s) => {
+      let ips: string[] = [];
+      try {
+        if (api.getLocalIps) ips = await api.getLocalIps();
+      } catch (err) {}
+      setSettings({ ...s, ips });
+    });
   }, [refresh]);
+
+  useEffect(() => {
+    if (settings.theme === 'light') {
+      document.body.classList.add('theme-light')
+    } else {
+      document.body.classList.remove('theme-light')
+    }
+  }, [settings.theme]);
   useEffect(() => api.onUploadProgress(setUpload), []);
   useEffect(() => api.onPrinterIpUpdated((config) => {
     toast(`${config.name} IP adresi değişti: ${config.host}`, 'success');
@@ -699,10 +713,6 @@ function PrinterCard({
       <div className="printer-identity">
         <h3>{config.name}</h3>
         <p>{config.model}</p>
-        <span>
-          <MapPin size={13} />
-          {config.location || tr("Konum belirtilmedi", "Location not set")}
-        </span>
       </div>
       {activeJob ? (
         <div className="job-box">
@@ -895,9 +905,7 @@ function PrinterDetail({
             {statusLabel(snapshot.state)}
           </span>
           <h2>{config.name}</h2>
-          <p>
-            {config.model} · {config.location}
-          </p>
+          <p>{config.model}</p>
         </div>
         <div className="detail-actions">
           <button
@@ -1093,7 +1101,7 @@ function FileTable({
             </span>
           </span>
           <span>{formatBytes(file.size)}</span>
-          <span>{file.modifiedDate ? file.modifiedDate : "—"}</span>
+          <span>{file.modifiedDate ? file.modifiedDate.split(' ')[0].split('T')[0] : "—"}</span>
           <span className="file-actions">
             <button
               title={tr("Yazdır", "Print")}
@@ -1358,7 +1366,7 @@ function JobsView({
               </div>
               {job.endPrintTime ? (
                 <time>
-                  {new Date(job.endPrintTime).toLocaleString(
+                  {new Date(job.endPrintTime).toLocaleDateString(
                     document.documentElement.lang === "en" ? "en-US" : "tr-TR",
                   )}
                 </time>
@@ -1423,31 +1431,30 @@ function SettingsView({
       </section>
       <section className="panel settings-card">
         <p className="section-kicker">
-          {tr("BAĞLANTI POLİTİKASI", "CONNECTION POLICY")}
+          {tr("GÖRÜNÜM", "APPEARANCE")}
         </p>
-        <h2>{tr("Nova3D uyum modu", "Nova3D compatibility mode")}</h2>
-        <p>
-          {tr(
-            "Firmware 2.1.6 için /file/list bağlantı testi olarak kullanılır. /job/list/ hata verirse yazıcı çevrimdışı sayılmaz.",
-            "For firmware 2.1.6, /file/list is used as the connection test. A /job/list/ error does not mark the printer offline.",
-          )}
-        </p>
-        <div className="setting-list">
-          <span>
-            <Activity />
-            {tr("İş listesi toleransı", "Job-list tolerance")}{" "}
-            <b>{tr("Açık", "On")}</b>
-          </span>
-          <span>
-            <Wifi />
-            {tr("Yerel ağ bağlantısı", "Local network connection")}{" "}
-            <b>HTTP :8081</b>
-          </span>
-          <span>
-            <HardDrive />
-            {tr("Ayar deposu", "Settings storage")}{" "}
-            <b>{tr("Yerel", "Local")}</b>
-          </span>
+        <h2>{tr("Tema Ayarları", "Theme Settings")}</h2>
+        <div style={{ marginTop: '16px', display: 'flex', gap: '16px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input 
+              type="radio" 
+              name="theme"
+              checked={settings.theme !== 'light'}
+              onChange={() => updateSetting("theme", "dark")}
+              style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
+            />
+            <span style={{ fontSize: '15px', color: '#eef4ef' }}>{tr("Koyu", "Dark")}</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input 
+              type="radio" 
+              name="theme"
+              checked={settings.theme === 'light'}
+              onChange={() => updateSetting("theme", "light")}
+              style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
+            />
+            <span style={{ fontSize: '15px', color: '#eef4ef' }}>{tr("Açık", "Light")}</span>
+          </label>
         </div>
       </section>
       <section className="panel settings-card">
@@ -1455,10 +1462,27 @@ function SettingsView({
           PWA SERVER
         </p>
         <h2>{tr("Mobil Erişim (PWA)", "Mobile Access (PWA)")}</h2>
-        <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz.", "Scan the QR code to install as a mobile app (PWA) on your device.")}</p>
-        <div style={{ marginTop: '16px', background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px' }}>
-          <QRCodeSVG value="http://nova-fleet.local:7373" size={160} />
-        </div>
+        <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz. Bonjour çalışmıyorsa IP adresini kullanın.", "Scan the QR code to install as a mobile app (PWA) on your device. Use the IP address if Bonjour fails.")}</p>
+        
+        {settings.ips && Array.isArray(settings.ips) && settings.ips.length > 0 ? (
+          settings.ips.map(ip => (
+            <div key={ip} style={{ display: 'inline-block', margin: '8px', textAlign: 'center' }}>
+              <div style={{ background: 'white', padding: '16px', borderRadius: '8px' }}>
+                <QRCodeSVG value={`http://${ip}:7373`} size={140} />
+              </div>
+              <p style={{ marginTop: '8px', marginBottom: 0 }}>
+                <a href={`http://${ip}:7373`} target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
+                  http://{ip}:7373
+                </a>
+              </p>
+            </div>
+          ))
+        ) : (
+          <div style={{ marginTop: '16px', background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px' }}>
+            <QRCodeSVG value="http://nova-fleet.local:7373" size={160} />
+          </div>
+        )}
+        
         <p style={{ marginTop: '8px' }}>
           <a href="http://nova-fleet.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
             http://nova-fleet.local:7373
@@ -1635,7 +1659,7 @@ function PrinterModal({
             />
           </label>
           <label className="full">
-            <span>{tr("BaÄŸlantÄ± protokolÃ¼", "Connection protocol")}</span>
+            <span>{tr("Bağlantı protokolü", "Connection protocol")}</span>
             <select
               value={form.protocol ?? "nova"}
               onChange={(e) => setProtocol(e.target.value as SavePrinterInput["protocol"])}
@@ -1645,19 +1669,10 @@ function PrinterModal({
             </select>
             <small>
               {tr(
-                "Nova varsayÄ±lanÄ± 8081, SDCP 3.0 varsayÄ±lanÄ± 3030. Ã–zel port yazarsan protokol deÄŸiÅŸiminde korunur.",
+                "Nova varsayılanı 8081, SDCP 3.0 varsayılanı 3030. Özel port yazarsan protokol değişiminde korunur.",
                 "Nova defaults to 8081, SDCP 3.0 defaults to 3030. Custom ports are preserved when switching protocol.",
               )}
             </small>
-          </label>
-          <label className="full">
-            <span>{tr("Konum", "Location")}</span>
-            <input
-              autoComplete="off"
-              value={form.location}
-              onChange={(e) => field("location", e.target.value)}
-              placeholder={tr("Örn. Prototip Atölyesi", "e.g. Prototype Lab")}
-            />
           </label>
           <label className="full">
             <span>{tr("Sorgulama aralığı", "Polling interval")}</span>

@@ -16,6 +16,21 @@
   --red: #fa7f79;
 }
 
+body.theme-light {
+  color: #111412;
+  --bg: #f4f6f5;
+  --sidebar: #e9eceb;
+  --panel: #ffffff;
+  --panel-2: #f8f9f8;
+  --line: #dbe0dc;
+  --muted: #6e7a73;
+  --soft: #4a544e;
+  --mint: #159c55;
+  --mint-dark: #d2f2df;
+  --amber: #b97d09;
+  --red: #d93d35;
+}
+
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); overflow: hidden; }
 button, input, select { font: inherit; }

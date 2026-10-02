@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import type { Request, Response } from 'express'
 import { enableSdcpCamera } from './sdcp-ws.js'
+// @ts-expect-error No types for ffmpeg-static
+import ffmpegPath from 'ffmpeg-static'
 
 const streams = new Map<string, {
   process: ChildProcess,
@@ -27,36 +29,10 @@ export async function handleMjpegStream(req: Request, res: Response) {
   if (!stream) {
     // Start ffmpeg
     const rtspUrl = await enableSdcpCamera(printerId)
-    const ffmpeg = spawn('ffmpeg', [
-      '-rtsp_transport', 'tcp',
-      '-i', rtspUrl,
-      '-f', 'mjpeg',
-      '-r', '15',
-      '-q:v', '5',
-      '-an',
-      '-'
-    ])
+    // We use ffmpegMpjpeg instead of raw ffmpeg
+    const ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath?.path ?? 'ffmpeg');
 
-    stream = {
-      process: ffmpeg,
-      clients: new Set(),
-      lastActive: Date.now()
-    }
-    streams.set(printerId, stream)
-
-    let lastFrame: Buffer | undefined
-
-    ffmpeg.stdout.on('data', (data: Buffer) => {
-      // Very naive boundary injection (in real life we should parse JPEGs properly,
-      // but ffmpeg with -f mjpeg already generates JPEGs back to back. 
-      // Express might need manual multipart wrapping or we just write it.
-      // A better way is using an existing package, but let's do a basic manual approach:
-      // -f mpjpeg instead of mjpeg gives multipart directly!
-    })
-
-    // Actually, ffmpeg supports -f mpjpeg which outputs boundary out of the box!
-    ffmpeg.kill()
-    const ffmpegMpjpeg = spawn('ffmpeg', [
+    const ffmpegMpjpeg = spawn(ffmpegCmd, [
       '-rtsp_transport', 'tcp',
       '-i', rtspUrl,
       '-f', 'mpjpeg',
@@ -66,7 +42,12 @@ export async function handleMjpegStream(req: Request, res: Response) {
       '-'
     ])
     
-    stream.process = ffmpegMpjpeg
+    stream = {
+      process: ffmpegMpjpeg,
+      clients: new Set(),
+      lastActive: Date.now()
+    }
+    streams.set(printerId, stream)
 
     ffmpegMpjpeg.stdout.on('data', (data: Buffer) => {
       stream!.clients.forEach(client => {
@@ -74,8 +55,8 @@ export async function handleMjpegStream(req: Request, res: Response) {
       })
     })
 
-    ffmpegMpjpeg.stderr.on('data', () => {
-      // ignore ffmpeg logs
+    ffmpegMpjpeg.stderr.on('data', (data) => {
+      // console.error(`ffmpeg stderr: ${data}`)
     })
 
     ffmpegMpjpeg.on('close', () => {
