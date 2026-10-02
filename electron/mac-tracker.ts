@@ -44,7 +44,22 @@ export function startMacTracking(store: PrinterStore, onIpUpdated: (config: Prin
     const table = await getArpTable()
 
     for (const printer of printers) {
-      if (!printer.macAddress) continue
+      if (!printer.macAddress) {
+        // Try to resolve missing mac address
+        let resolvedMac: string | undefined
+        for (const [mac, tableIp] of table.entries()) {
+          if (tableIp === printer.host) {
+            resolvedMac = mac
+            break
+          }
+        }
+        if (resolvedMac) {
+          console.log(`MAC adresi bulundu: ${printer.name} -> ${resolvedMac}`)
+          const updatedConfig = { ...printer, macAddress: resolvedMac }
+          await store.save(updatedConfig)
+        }
+        continue
+      }
       
       const currentIpInArp = table.get(normalizeMac(printer.macAddress))
       if (currentIpInArp && currentIpInArp !== printer.host) {

@@ -498,7 +498,6 @@ function App() {
           <div className={`toast ${item.kind}`} key={item.id}>
             {item.kind === "success" ? <Check /> : <AlertTriangle />}
             <span>{item.text}</span>
-            <button className="close-toast" onClick={() => toastQueue.remove(item.id)}><X size={14}/></button>
           </div>
         ))}
         {overflowCount > 0 && (

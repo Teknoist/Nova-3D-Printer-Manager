@@ -1,0 +1,8 @@
+Bu sürümde arka planda büyük yapısal yenilikler ve uzun zamandır beklenen özellikler var:
+
+- **SDCP 3.0 Desteği**: WebSocket üzerinden "push status" sistemiyle sıfır gecikmeli yazdırma takibi.
+- **Kamera (RTSP) Canlı Yayın**: SDCP 3.0 destekli yazıcı kameraları için doğrudan uygulama içi canlı video izleme (FFmpeg RTSP bridge).
+- **Mobil Erişim (PWA)**: Artık telefonunuzun tarayıcısından aynı ağdaki bilgisayarınıza bağlanıp filoyu görebilirsiniz. (Ayarlar sayfasından QR okutun)
+- **Akıllı Bildirim Kuyruğu**: Birden fazla dosyayı aynı anda yüklerken çıkan bildirim karmaşası gruplandırılarak çözüldü.
+- **Otomatik IP Takibi (MAC Tracker)**: Yazıcılarınızın IP adresi değişse bile bağlantı (ARP üzerinden) arka planda otomatik güncellenir ve yenilenir.
+- **Hızlı Başlangıç**: Paralel bağlantı mimarisiyle, ulaşılamayan yazıcıların uygulamanın açılışını geciktirmesi sorunu çözüldü.
