@@ -24,7 +24,7 @@ function focusMainWindow() {
 
 
 function errorHtml(title: string, detail: string) {
-  return `<!doctype html><html lang="tr"><head><meta charset="UTF-8"><title>Nova Fleet</title><style>
+  return `<!doctype html><html lang="tr"><head><meta charset="UTF-8"><title>Nova 3D Printer Manager</title><style>
     body{margin:0;background:#0d0f0f;color:#eef4ef;font-family:Segoe UI,Arial,sans-serif;display:grid;place-items:center;min-height:100vh}
     main{max-width:760px;padding:34px;border:1px solid #28322c;border-radius:14px;background:#131715;box-shadow:0 18px 70px rgba(0,0,0,.35)}
     h1{margin:0 0 12px;font-size:24px}p{color:#aab5ae;line-height:1.55}pre{white-space:pre-wrap;background:#0b0d0d;border:1px solid #252b27;border-radius:10px;padding:14px;color:#f2c069;overflow:auto}
@@ -82,7 +82,7 @@ function createWindow() {
   window.webContents.setWindowOpenHandler(({ url }) => { void shell.openExternal(url); return { action: 'deny' } })
   void loadRenderer(window).catch((error) => {
     window.show()
-    void window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml('Nova Fleet başlatılamadı', error instanceof Error ? error.stack ?? error.message : String(error)))}`)
+    void window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml('Nova 3D Printer Manager başlatılamadı', error instanceof Error ? error.stack ?? error.message : String(error)))}`)
   })
 }
 

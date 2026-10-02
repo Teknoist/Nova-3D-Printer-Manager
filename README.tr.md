@@ -1,8 +1,8 @@
-# Nova Fleet
+# Nova 3D Printer Manager
 
 [English documentation](README.md)
 
-Nova Fleet, birden fazla Nova3D reçine yazıcıyı aynı Windows uygulamasından izlemek ve yönetmek için geliştirilmiş modern bir masaüstü uygulamasıdır.
+Nova 3D Printer Manager, birden fazla Nova3D reçine yazıcıyı aynı Windows uygulamasından izlemek ve yönetmek için geliştirilmiş modern bir masaüstü uygulamasıdır.
 
 ![Platform](https://img.shields.io/badge/platform-Windows-1f6feb)
 ![Electron](https://img.shields.io/badge/Electron-43-9feaf9)
@@ -23,17 +23,17 @@ Nova Fleet, birden fazla Nova3D reçine yazıcıyı aynı Windows uygulamasında
 Normal kullanım için Node.js, Java veya başka bir geliştirme aracı kurmanız gerekmez.
 
 1. GitHub deposundaki **Releases** sayfasını açın.
-2. En güncel sürümden `Nova-Fleet-Setup-x.x.x.exe` dosyasını indirin.
+2. En güncel sürümden `nova-3d-printer-manager-Setup-x.x.x.exe` dosyasını indirin.
 3. İndirilen kurulum dosyasını çalıştırın.
 4. Kurulum klasörünü seçip kurulumu tamamlayın.
-5. Masaüstündeki **Nova Fleet** kısayolunu açın.
+5. Masaüstündeki **Nova 3D Printer Manager** kısayolunu açın.
 
 Uygulama henüz ticari kod imzalama sertifikasıyla imzalanmadığı için Windows SmartScreen uyarı gösterebilir. Dosyayı yalnızca bu deponun Releases sayfasından indirdiyseniz **Daha fazla bilgi → Yine de çalıştır** yolunu kullanabilirsiniz.
 
 ### Yazıcıları ekleme
 
 1. Bilgisayar ve yazıcıların aynı yerel ağda olduğundan emin olun.
-2. Nova Fleet içinde **Yazıcı ekle** düğmesine basın.
+2. Nova 3D Printer Manager içinde **Yazıcı ekle** düğmesine basın.
 3. Yazıcının adını ve yerel IP adresini girin.
 4. Portu, yazıcıda özel olarak değiştirilmediyse `8081` bırakın.
 5. Sorgulama aralığını eski firmware için en az `10 saniye` tutun.
@@ -60,7 +60,7 @@ GitHub Actions her Android değişikliğinde kurulabilir debug APK üretir:
 
 1. Deponun **Actions** sayfasını açın.
 2. **Build Android APK** workflow'unu seçin.
-3. En güncel başarılı çalışmanın **Artifacts** bölümünden `Nova-Fleet-Android-<commit>` dosyasını indirin.
+3. En güncel başarılı çalışmanın **Artifacts** bölümünden `nova-3d-printer-manager-Android-<commit>` dosyasını indirin.
 4. Arşivdeki `app-debug.apk` dosyasını Android telefona aktarın ve kurun.
 
 Telefon ile yazıcıların aynı Wi-Fi ağına bağlı olması gerekir. Nova3D firmware yerel API'yi şifresiz HTTP üzerinden sunduğu için Android uygulaması yalnızca yerel ağdaki `:8081` bağlantılarına izin verir.
@@ -71,7 +71,7 @@ Telefon ile yazıcıların aynı Wi-Fi ağına bağlı olması gerekir. Nova3D f
 
 - Bilgisayar ile yazıcının aynı ağ/VLAN üzerinde olduğunu kontrol edin.
 - Tarayıcıdan `http://YAZICI_IP:8081/file/list` adresini açmayı deneyin.
-- Windows Güvenlik Duvarı'nda Nova Fleet'e yerel ağ izni verin.
+- Windows Güvenlik Duvarı'nda Nova 3D Printer Manager'e yerel ağ izni verin.
 - Yazıcı IP adresinin DHCP nedeniyle değişmediğini kontrol edin.
 - Firmware yoğun isteklerden sonra kilitlendiyse yazıcıyı yeniden başlatın.
 
@@ -86,15 +86,15 @@ Telefon ile yazıcıların aynı Wi-Fi ağına bağlı olması gerekir. Nova3D f
 
 Yazıcı profilleri yalnızca mevcut Windows kullanıcısında, Electron uygulama veri klasöründeki `printers.json` dosyasında tutulur. Parola veya bulut kimlik bilgisi kaydedilmez.
 
-Uygulamayı kaldırmak profilleri otomatik olarak silmez. Tam temizlik için Windows'ta `%APPDATA%` ve `%LOCALAPPDATA%` altında **Nova Fleet** klasörünü kaldırabilirsiniz.
+Uygulamayı kaldırmak profilleri otomatik olarak silmez. Tam temizlik için Windows'ta `%APPDATA%` ve `%LOCALAPPDATA%` altında **Nova 3D Printer Manager** klasörünü kaldırabilirsiniz.
 
 ## Geliştirici kurulumu
 
 Gereksinimler: Node.js 24 ve npm.
 
 ```powershell
-git clone https://github.com/Teknoist/Nova-Fleet.git
-cd Nova-Fleet
+git clone https://github.com/Teknoist/nova-3d-printer-manager.git
+cd nova-3d-printer-manager
 npm install
 npm run dev
 ```
@@ -125,7 +125,7 @@ cd android
 .\gradlew.bat assembleDebug
 ```
 
-Çıktı `release/Nova-Fleet-Setup-<sürüm>.exe` olarak oluşturulur.
+Çıktı `release/nova-3d-printer-manager-Setup-<sürüm>.exe` olarak oluşturulur.
 
 ## Otomatik GitHub Release
 

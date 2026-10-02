@@ -339,7 +339,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA FLEET · v0.6.4</div>
+        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.6.4</div>
       </aside>
 
       <main className="main">
@@ -1508,13 +1508,13 @@ function SettingsView({
           ))
         ) : (
           <div style={{ marginTop: '16px', background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px' }}>
-            <QRCodeSVG value="http://nova-fleet.local:7373" size={160} />
+            <QRCodeSVG value="http://nova-3d-printer-manager.local:7373" size={160} />
           </div>
         )}
         
         <p style={{ marginTop: '8px' }}>
-          <a href="http://nova-fleet.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
-            http://nova-fleet.local:7373
+          <a href="http://nova-3d-printer-manager.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
+            http://nova-3d-printer-manager.local:7373
           </a>
         </p>
       </section>

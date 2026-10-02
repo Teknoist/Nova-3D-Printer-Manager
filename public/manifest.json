@@ -1,6 +1,6 @@
 {
-  "name": "Nova Fleet",
-  "short_name": "Nova Fleet",
+  "name": "Nova 3D Printer Manager",
+  "short_name": "Nova 3D Printer Manager",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d0f0f",

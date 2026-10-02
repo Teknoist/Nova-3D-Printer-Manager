@@ -70,13 +70,13 @@ jobs:
       - name: Name APK
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          cp android/app/build/outputs/apk/debug/app-debug.apk "Nova-Fleet-Android-${VERSION}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "Nova-3D-Printer-Manager-Android-${VERSION}.apk"
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Nova-Fleet-Android-${{ github.sha }}
-          path: Nova-Fleet-Android-*.apk
+          name: Nova-3D-Printer-Manager-Android-${{ github.sha }}
+          path: Nova-3D-Printer-Manager-Android-*.apk
           if-no-files-found: error
 
       - name: Add APK to GitHub Release
@@ -84,4 +84,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: Nova-Fleet-Android-*.apk
+          files: Nova-3D-Printer-Manager-Android-*.apk

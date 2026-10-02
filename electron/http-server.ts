@@ -85,7 +85,7 @@ export function startHttpServer(store: PrinterStore) {
   // Start listening on port 7373
   server.listen(7373, '0.0.0.0', () => {
     console.log('PWA HTTP Server running on port 7373')
-    bonjourService = bonjour.publish({ name: 'Nova Fleet', type: 'http', port: 7373, host: 'nova-fleet.local' })
+    bonjourService = bonjour.publish({ name: 'Nova 3D Printer Manager', type: 'http', port: 7373, host: 'nova-3d-printer-manager.local' })
   })
 }
 

@@ -1,15 +1,15 @@
 {
-  "name": "nova-fleet",
+  "name": "nova-3d-printer-manager",
   "version": "0.6.4",
   "private": true,
   "author": "Teknoist",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Teknoist/Nova-Fleet.git"
+    "url": "https://github.com/Teknoist/Nova-3D-Printer-Manager.git"
   },
-  "homepage": "https://github.com/Teknoist/Nova-Fleet",
-  "description": "Modern multi-printer desktop manager for Nova3D printers",
+  "homepage": "https://github.com/Teknoist/Nova-3D-Printer-Manager",
+  "description": "Modern multi-printer desktop manager for Nova3D and SDCP printers",
   "main": "dist-electron/electron/main.js",
   "type": "module",
   "scripts": {
@@ -63,8 +63,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.novafleet.desktop",
-    "productName": "Nova Fleet",
+    "appId": "com.nova3dprintermanager.desktop",
+    "productName": "Nova 3D Printer Manager",
     "asar": true,
     "directories": {
       "output": "release"
@@ -85,7 +85,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "Nova-Fleet-Setup-${version}.${ext}"
+      "artifactName": "Nova-3D-Printer-Manager-Setup-${version}.${ext}"
     }
   }
 }

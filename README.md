@@ -1,6 +1,6 @@
-# Nova Fleet
+# Nova 3D Printer Manager
 
-Nova Fleet is a local-first printer fleet manager for Nova3D resin printers and SDCP 3.0 compatible resin printers. It provides a polished Windows desktop app and an Android companion app for monitoring printers, browsing printer storage, and managing local print jobs on the same LAN.
+Nova 3D Printer Manager is a local-first printer fleet manager for Nova3D resin printers and SDCP 3.0 compatible resin printers. It provides a polished Windows desktop app and an Android companion app for monitoring printers, browsing printer storage, and managing local print jobs on the same LAN.
 
 [Turkish documentation](README.tr.md)
 
@@ -13,19 +13,19 @@ Nova Fleet is a local-first printer fleet manager for Nova3D resin printers and 
 
 ### Windows desktop
 
-![Nova Fleet overview dashboard](docs/screenshots/overview.png)
+![Nova 3D Printer Manager overview dashboard](docs/screenshots/overview.png)
 
-![Nova Fleet file center](docs/screenshots/file-center.png)
+![Nova 3D Printer Manager file center](docs/screenshots/file-center.png)
 
-![Nova Fleet printer profiles](docs/screenshots/printers.png)
+![Nova 3D Printer Manager printer profiles](docs/screenshots/printers.png)
 
 ### Android / mobile layout
 
-![Nova Fleet Android overview](docs/screenshots/android-overview.png)
+![Nova 3D Printer Manager Android overview](docs/screenshots/android-overview.png)
 
-## What Nova Fleet does
+## What Nova 3D Printer Manager does
 
-Nova Fleet is designed for small resin-printing workspaces that run more than one printer and need a practical local dashboard instead of checking every printer manually.
+Nova 3D Printer Manager is designed for small resin-printing workspaces that run more than one printer and need a practical local dashboard instead of checking every printer manually.
 
 It can:
 
@@ -40,45 +40,45 @@ It can:
 
 ## Supported printer modes
 
-Nova Fleet currently supports two local printer protocols.
+Nova 3D Printer Manager currently supports two local printer protocols.
 
 | Mode | Typical port | File type | Current support |
 | --- | ---: | --- | --- |
 | Nova3D / Photonic3D HTTP | `8081` | `.cws` | status, files, upload, delete, print, pause/resume, stop |
 | SDCP 3.0 | UDP `3000`, TCP `3030` | `.ctb` | discovery, status monitoring, file listing |
 
-SDCP upload and remote print commands are intentionally disabled for now. SDCP printer models can differ in command behavior, so Nova Fleet only enables the SDCP operations that have been implemented defensively: discovery, status, and file listing.
+SDCP upload and remote print commands are intentionally disabled for now. SDCP printer models can differ in command behavior, so Nova 3D Printer Manager only enables the SDCP operations that have been implemented defensively: discovery, status, and file listing.
 
 ## Download
 
 Get the latest release from the GitHub Releases page:
 
-- Windows installer: `Nova-Fleet-Setup-x.x.x.exe`
-- Android APK: `Nova-Fleet-Android-x.x.x.apk`
+- Windows installer: `nova-3d-printer-manager-Setup-x.x.x.exe`
+- Android APK: `nova-3d-printer-manager-Android-x.x.x.apk`
 
 Latest published release:
 
-- [Nova Fleet v0.5.2](https://github.com/Teknoist/Nova-Fleet/releases/tag/v0.5.2)
+- [Nova 3D Printer Manager v0.5.2](https://github.com/Teknoist/nova-3d-printer-manager/releases/tag/v0.5.2)
 
 ## Windows installation
 
 Regular users do not need Node.js, npm, Java, Android Studio, or any development tools.
 
-1. Open [Releases](https://github.com/Teknoist/Nova-Fleet/releases).
-2. Download the latest `Nova-Fleet-Setup-x.x.x.exe`.
+1. Open [Releases](https://github.com/Teknoist/nova-3d-printer-manager/releases).
+2. Download the latest `nova-3d-printer-manager-Setup-x.x.x.exe`.
 3. Run the installer.
 4. Choose the installation folder.
-5. Launch **Nova Fleet** from the desktop shortcut or Start Menu.
+5. Launch **Nova 3D Printer Manager** from the desktop shortcut or Start Menu.
 
 The Windows installer is not code-signed yet. Windows SmartScreen may show a warning. If you downloaded the file from this repository's official Releases page, choose **More info -> Run anyway**.
 
 ## Android installation
 
-1. Open [Releases](https://github.com/Teknoist/Nova-Fleet/releases).
-2. Download the latest `Nova-Fleet-Android-x.x.x.apk`.
+1. Open [Releases](https://github.com/Teknoist/nova-3d-printer-manager/releases).
+2. Download the latest `nova-3d-printer-manager-Android-x.x.x.apk`.
 3. Transfer the APK to your Android device.
 4. Allow installation from the selected source if Android asks.
-5. Install and open Nova Fleet.
+5. Install and open Nova 3D Printer Manager.
 
 The Android device and printers must be connected to the same Wi-Fi/LAN. Some routers isolate Wi-Fi clients by default; disable client isolation if the app cannot reach printers that are visible from another device.
 
@@ -101,7 +101,7 @@ Demo printers are included on first launch so the interface is not empty. You ca
 
 ## Network requirements
 
-Nova Fleet talks directly to printers on the local network.
+Nova 3D Printer Manager talks directly to printers on the local network.
 
 For Nova3D / Photonic3D printers:
 
@@ -114,20 +114,20 @@ For SDCP 3.0 printers:
 - WebSocket status and file-list requests on TCP `3030`
 - WebSocket URL: `ws://PRINTER_IP:3030/websocket`
 
-On Windows, allow Nova Fleet through Windows Firewall for private networks. If ping or browser access works but Nova Fleet does not, firewall rules for UDP `3000` or TCP `3030` are the first thing to check for SDCP printers.
+On Windows, allow Nova 3D Printer Manager through Windows Firewall for private networks. If ping or browser access works but Nova 3D Printer Manager does not, firewall rules for UDP `3000` or TCP `3030` are the first thing to check for SDCP printers.
 
 ## SDCP 3.0 implementation notes
 
-The SDCP path is not a simple HTTP status endpoint. Nova Fleet uses the SDCP flow expected by SDCP 3.0 printers:
+The SDCP path is not a simple HTTP status endpoint. Nova 3D Printer Manager uses the SDCP flow expected by SDCP 3.0 printers:
 
 1. Send discovery packet `M99999` over UDP port `3000`.
 2. Read the printer response containing `MainboardIP`, `MainboardID`, and device name.
 3. Open `ws://PRINTER_IP:3030/websocket`.
 4. Request status with SDCP command `0`.
 5. Request storage file lists with SDCP command `258`.
-6. Normalize returned `.ctb` files into Nova Fleet's file table.
+6. Normalize returned `.ctb` files into Nova 3D Printer Manager's file table.
 
-If file listing fails, Nova Fleet keeps the printer online when status data is still available. A file-list problem should not incorrectly mark a working printer as offline.
+If file listing fails, Nova 3D Printer Manager keeps the printer online when status data is still available. A file-list problem should not incorrectly mark a working printer as offline.
 
 ## Troubleshooting
 
@@ -137,7 +137,7 @@ If file listing fails, Nova Fleet keeps the printer online when status data is s
 - Confirm the computer/phone and printer are on the same LAN or VLAN.
 - Restart the printer if its embedded service stopped responding.
 - Check whether DHCP changed the printer IP.
-- On Windows, allow Nova Fleet through the firewall.
+- On Windows, allow Nova 3D Printer Manager through the firewall.
 - For SDCP, make sure UDP `3000` and TCP `3030` are reachable.
 
 ### Nova3D printer connects but file upload fails
@@ -156,7 +156,7 @@ If file listing fails, Nova Fleet keeps the printer online when status data is s
 
 ## Data and privacy
 
-Nova Fleet stores printer profiles locally on the current device. It does not require a cloud account and does not send printer data to a hosted backend.
+Nova 3D Printer Manager stores printer profiles locally on the current device. It does not require a cloud account and does not send printer data to a hosted backend.
 
 On Windows, printer profiles are stored in the Electron application data folder as `printers.json`.
 
@@ -168,8 +168,8 @@ Requirements:
 - npm
 
 ```powershell
-git clone https://github.com/Teknoist/Nova-Fleet.git
-cd Nova-Fleet
+git clone https://github.com/Teknoist/nova-3d-printer-manager.git
+cd nova-3d-printer-manager
 npm install
 npm run dev
 ```
@@ -205,8 +205,8 @@ cd android
 
 GitHub Actions builds Windows and Android artifacts. A normal release should include:
 
-- `Nova-Fleet-Setup-x.x.x.exe`
-- `Nova-Fleet-Android-x.x.x.apk`
+- `nova-3d-printer-manager-Setup-x.x.x.exe`
+- `nova-3d-printer-manager-Android-x.x.x.apk`
 
 Before publishing a release, run:
 
@@ -222,4 +222,4 @@ Most local resin-printer APIs do not provide authentication. Keep printers on a 
 
 ## License
 
-Nova Fleet is released under the MIT License. See [LICENSE](LICENSE).
+Nova 3D Printer Manager is released under the MIT License. See [LICENSE](LICENSE).

@@ -42,7 +42,7 @@ function requestBuffer(url: URL, method = 'GET', timeout = 4500): Promise<Buffer
         Accept: 'application/json, text/plain, */*',
         'Accept-Encoding': 'identity',
         Connection: 'close',
-        'User-Agent': 'Nova-Fleet/0.2.2',
+        'User-Agent': 'Nova-3D-Printer-Manager/0.2.2',
       },
     }, (response) => {
       const chunks: Buffer[] = []

@@ -1,6 +1,6 @@
 export type Language = "tr" | "en";
 
-const STORAGE_KEY = "nova-fleet-language";
+const STORAGE_KEY = "nova-3d-printer-manager-language";
 
 export function detectLanguage(): Language {
   const saved = window.localStorage.getItem(STORAGE_KEY);

@@ -1,7 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import type { Request, Response } from 'express'
 import { enableSdcpCamera } from './sdcp-ws.js'
-// @ts-expect-error No types for ffmpeg-static
 import ffmpegPath from 'ffmpeg-static'
 
 const streams = new Map<string, {
@@ -30,7 +29,8 @@ export async function handleMjpegStream(req: Request, res: Response) {
     // Start ffmpeg
     const rtspUrl = await enableSdcpCamera(printerId)
     // We use ffmpegMpjpeg instead of raw ffmpeg
-    const ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath?.path ?? 'ffmpeg');
+    const ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath as any)?.path ?? 'ffmpeg';
+
 
     const ffmpegMpjpeg = spawn(ffmpegCmd, [
       '-rtsp_transport', 'tcp',

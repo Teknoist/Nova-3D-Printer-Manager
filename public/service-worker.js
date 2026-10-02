@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nova-fleet-cache-v1';
+const CACHE_NAME = 'nova-3d-printer-manager-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
