@@ -1505,7 +1505,7 @@ function SettingsView({
             </p>
           </div>
 
-          {settings.ips && Array.isArray(settings.ips) && settings.ips.map((ip: string) => (
+          {Array.isArray(settings.ips) ? (settings.ips as string[]).map((ip: string) => (
             <div key={ip} style={{ textAlign: 'center' }}>
               <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>
                 <QRCodeSVG value={`http://${ip}:7373`} size={120} />
@@ -1516,7 +1516,7 @@ function SettingsView({
                 </a>
               </p>
             </div>
-          ))}
+          )) : null}
         </div>
       </section>
       <section className="panel settings-card">
