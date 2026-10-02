@@ -66,3 +66,23 @@ export class PrinterStore {
     await writeFile(this.filePath, JSON.stringify(printers, null, 2), 'utf8')
   }
 }
+
+export class SettingsStore {
+  private get filePath() { return join(app.getPath('userData'), 'settings.json') }
+
+  async getSettings(): Promise<Record<string, unknown>> {
+    try {
+      return JSON.parse(await readFile(this.filePath, 'utf8')) as Record<string, unknown>
+    } catch {
+      return { autoSdcpDiscovery: false }
+    }
+  }
+
+  async saveSettings(settings: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const current = await this.getSettings()
+    const merged = { ...current, ...settings }
+    await mkdir(dirname(this.filePath), { recursive: true })
+    await writeFile(this.filePath, JSON.stringify(merged, null, 2), 'utf8')
+    return merged
+  }
+}

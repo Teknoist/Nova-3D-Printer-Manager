@@ -157,8 +157,11 @@ function App() {
     [toast],
   );
 
+  const [settings, setSettings] = useState<Record<string, unknown>>({});
+
   useEffect(() => {
     void refresh();
+    void api.getSettings().then(setSettings);
   }, [refresh]);
   useEffect(() => api.onUploadProgress(setUpload), []);
   useEffect(() => api.onPrinterIpUpdated((config) => {
@@ -316,7 +319,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA FLEET · v0.6.2</div>
+        <div className="sidebar-version">NOVA FLEET · v0.6.3</div>
       </aside>
 
       <main className="main">
@@ -435,6 +438,12 @@ function App() {
                 edit={setModal}
                 language={language}
                 setLanguage={changeLanguage}
+                settings={settings}
+                updateSetting={async (key: string, value: unknown) => {
+                  const next = { ...settings, [key]: value };
+                  setSettings(next);
+                  await api.saveSettings(next);
+                }}
               />
             )}
           </div>
@@ -1375,14 +1384,43 @@ function SettingsView({
   edit,
   language,
   setLanguage,
+  settings,
+  updateSetting,
 }: {
   configs: PrinterConfig[];
   edit: (config: PrinterConfig) => void;
   language: Language;
   setLanguage: (language: Language) => void;
+  settings: Record<string, unknown>;
+  updateSetting: (key: string, value: unknown) => void;
 }) {
   return (
     <div className="settings-grid">
+      <section className="panel settings-card">
+        <p className="section-kicker">
+          {tr("AĞ KEŞFİ", "NETWORK DISCOVERY")}
+        </p>
+        <h2>{tr("Otomatik SDCP Yazıcı Bulma", "Auto SDCP Printer Discovery")}</h2>
+        <p>
+          {tr(
+            "Aynı ağda bulunan SDCP destekli yazıcıları otomatik olarak bulur ve filoya ekler.",
+            "Automatically finds and adds SDCP compatible printers on the local network."
+          )}
+        </p>
+        <div style={{ marginTop: '16px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              checked={!!settings.autoSdcpDiscovery}
+              onChange={(e) => updateSetting("autoSdcpDiscovery", e.target.checked)}
+              style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
+            />
+            <span style={{ fontSize: '15px', color: '#eef4ef' }}>
+              {tr("Aktif", "Active")}
+            </span>
+          </label>
+        </div>
+      </section>
       <section className="panel settings-card">
         <p className="section-kicker">
           {tr("BAĞLANTI POLİTİKASI", "CONNECTION POLICY")}

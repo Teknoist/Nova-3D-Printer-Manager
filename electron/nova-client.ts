@@ -455,6 +455,46 @@ export class NovaClient {
     }
   }
 
+  public async discoverAllSdcpDevices(): Promise<Array<{ device: SdcpDiscoveryDevice; source: string }>> {
+    return new Promise((resolve, reject) => {
+      const socket = createSocket('udp4')
+      const devices: Array<{ device: SdcpDiscoveryDevice; source: string }> = []
+      let settled = false
+      const finish = () => {
+        if (settled) return
+        settled = true
+        socket.close()
+        // Filter out duplicates by MainboardIP or source
+        const unique = new Map<string, { device: SdcpDiscoveryDevice; source: string }>()
+        for (const item of devices) {
+          const ip = item.device.Data?.MainboardIP || item.source
+          if (ip) unique.set(ip as string, item)
+        }
+        resolve(Array.from(unique.values()))
+      }
+      const timer = setTimeout(finish, 2500)
+      socket.on('error', (error) => {
+        clearTimeout(timer)
+        if (!settled) {
+          settled = true
+          socket.close()
+          reject(error)
+        }
+      })
+      socket.on('message', (message, remote) => {
+        const parsed = parseJsonObjectText(message.toString('utf8'))
+        if (parsed?.Data && typeof parsed.Data === 'object') {
+          devices.push({ device: parsed as SdcpDiscoveryDevice, source: remote.address })
+        }
+      })
+      socket.bind(0, '0.0.0.0', () => {
+        socket.setBroadcast(true)
+        const payload = Buffer.from('M99999')
+        socket.send(payload, 3000, '255.255.255.255')
+      })
+    })
+  }
+
   private async discoverSdcpDevice(host: string): Promise<SdcpDiscoveryDevice> {
     return new Promise((resolve, reject) => {
       const socket = createSocket('udp4')
@@ -482,7 +522,7 @@ export class NovaClient {
         const parsed = parseJsonObjectText(message.toString('utf8'))
         if (parsed?.Data && typeof parsed.Data === 'object') {
           devices.push({ device: parsed as SdcpDiscoveryDevice, source: remote.address })
-          if (remote.address === host || (parsed as SdcpDiscoveryDevice).Data?.MainboardIP === host) {
+          if (host && (remote.address === host || (parsed as SdcpDiscoveryDevice).Data?.MainboardIP === host)) {
             clearTimeout(timer)
             finish()
           }
@@ -492,7 +532,7 @@ export class NovaClient {
         socket.setBroadcast(true)
         const payload = Buffer.from('M99999')
         socket.send(payload, 3000, '255.255.255.255')
-        socket.send(payload, 3000, host)
+        if (host) socket.send(payload, 3000, host)
       })
     })
   }

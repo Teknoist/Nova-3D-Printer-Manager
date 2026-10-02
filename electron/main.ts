@@ -4,12 +4,13 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { SavePrinterInput, PrinterSnapshot } from '../src/shared/types.js'
 import { NovaClient } from './nova-client.js'
-import { PrinterStore } from './store.js'
+import { PrinterStore, SettingsStore } from './store.js'
 import { findMacForIp, startMacTracking } from './mac-tracker.js'
 import { startHttpServer, stopHttpServer } from './http-server.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const store = new PrinterStore()
+const settingsStore = new SettingsStore()
 const client = new NovaClient()
 const hasSingleInstanceLock = app.requestSingleInstanceLock()
 let mainWindow: BrowserWindow | undefined
@@ -130,6 +131,8 @@ ipcMain.handle('files:choose-upload', async (event, id: string) => {
     return { ok: true, message: 'Dosya yazıcıya yüklendi.' }
   } catch (error) { return result(error) }
 })
+ipcMain.handle('settings:get', () => settingsStore.getSettings())
+ipcMain.handle('settings:save', (_event, settings) => settingsStore.saveSettings(settings))
 
 if (!hasSingleInstanceLock) {
   app.quit()
@@ -146,6 +149,47 @@ if (!hasSingleInstanceLock) {
     startMacTracking(store, (config) => {
       if (mainWindow) mainWindow.webContents.send('printer-ip-updated', config)
     });
+    
+    // Auto SDCP discovery
+    setInterval(async () => {
+      try {
+        const settings = await settingsStore.getSettings()
+        if (settings.autoSdcpDiscovery) {
+          const found = await client.discoverAllSdcpDevices()
+          const printers = await store.list()
+          for (const item of found) {
+            const host = (item.device.Data?.MainboardIP as string) || item.source
+            const exists = printers.some(p => p.host === host || (p.macAddress && p.macAddress === item.device.Data?.MainboardID))
+            if (!exists) {
+              const name = (item.device.Data?.Name as string) || (item.device.Data?.MachineName as string) || `SDCP Yazıcı (${host})`
+              const model = (item.device.Data?.MachineName as string) || 'SDCP Cihazı'
+              await store.save({
+                name,
+                host,
+                port: 3030,
+                protocol: 'sdcp3',
+                model,
+                location: 'Ağ Bulundu',
+                pollInterval: 10,
+                enabled: true,
+                macAddress: item.device.Data?.MainboardID as string
+              })
+              // Update renderer
+              if (mainWindow) {
+                const updatedPrinters = await store.list()
+                const newPrinter = updatedPrinters.find(p => p.host === host)
+                if (newPrinter) {
+                  const snapshot = await client.snapshot(newPrinter)
+                  mainWindow.webContents.send('printer-ip-updated', newPrinter) // Hacky way to trigger UI refresh
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Auto discovery error:", err)
+      }
+    }, 60000) // Every 60 seconds
     
     startHttpServer(store)
     

@@ -75,6 +75,8 @@ export interface NovaFleetApi {
   removePrinter: (id: string) => Promise<ActionResult>
   refreshPrinter: (id: string) => Promise<PrinterSnapshot>
   refreshAll: () => Promise<PrinterSnapshot[]>
+  getSettings: () => Promise<Record<string, unknown>>
+  saveSettings: (settings: Record<string, unknown>) => Promise<Record<string, unknown>>
   chooseAndUpload: (id: string) => Promise<ActionResult>
   deleteFile: (id: string, fileName: string) => Promise<ActionResult>
   printFile: (id: string, fileName: string) => Promise<ActionResult>
