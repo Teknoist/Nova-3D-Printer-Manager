@@ -5,6 +5,9 @@ import type { PrinterConfig } from '../src/shared/types.js'
 interface SdcpConnection {
   socket: WebSocket
   printerId: string
+  deviceId: string
+  mainboardId: string
+  host: string
   pingTimer?: ReturnType<typeof setInterval>
   reconnectTimer?: ReturnType<typeof setTimeout>
   lastPong: number
@@ -26,6 +29,9 @@ export function startSdcpConnection(printer: PrinterConfig, deviceId: string, ma
   const connection: SdcpConnection = {
     socket,
     printerId: printer.id,
+    deviceId,
+    mainboardId,
+    host,
     lastPong: Date.now(),
     statusCache: {}
   }
@@ -154,4 +160,22 @@ export function sendSdcpCommand(printerId: string, deviceId: string, mainboardId
       reject(new Error('Komut zaman aşımına uğradı'))
     }, 8000) // Increased timeout to 8s as per instructions
   })
+}
+
+export async function enableSdcpCamera(printerId: string): Promise<string> {
+  const connection = connections.get(printerId)
+  if (!connection) throw new Error("Yazıcıya bağlı değil")
+  
+  // Call Cmd: 386 with Enable: 1
+  try {
+    const result = await sendSdcpCommand(printerId, connection.deviceId, connection.mainboardId, 386, { Enable: 1 })
+    if (result.VideoUrl) {
+      return result.VideoUrl as string
+    }
+  } catch (err) {
+    console.error("Camera enable error:", err)
+  }
+  
+  // Fallback to default
+  return `rtsp://${connection.host}:554/stream`
 }

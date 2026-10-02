@@ -316,7 +316,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA FLEET · v0.6.1</div>
+        <div className="sidebar-version">NOVA FLEET · v0.6.2</div>
       </aside>
 
       <main className="main">
@@ -825,6 +825,7 @@ function Printers({
       </section>
       {selected ? (
         <PrinterDetail
+          key={selected.config.id}
           snapshot={selected}
           edit={edit}
           remove={remove}
@@ -871,6 +872,7 @@ function PrinterDetail({
   deleteFile: (id: string, name: string) => void;
   control: (id: string, jobId: string, action: "toggle" | "stop") => void;
 }) {
+  const [cameraOpen, setCameraOpen] = useState(false);
   const { config, activeJob } = snapshot;
   return (
     <section className="panel printer-detail">
@@ -990,15 +992,20 @@ function PrinterDetail({
             <div>
               <p className="section-kicker">{tr("CANLI KAMERA (RTSP)", "LIVE CAMERA (RTSP)")}</p>
             </div>
+            {!cameraOpen && (
+              <button className="secondary-button" onClick={() => setCameraOpen(true)}>Kamerayı Aç</button>
+            )}
           </div>
-          <div style={{ background: '#1c2020', borderRadius: '8px', overflow: 'hidden', marginTop: '12px' }}>
-            <img 
-              src={`http://${window.location.hostname || '127.0.0.1'}:7373/camera/${config.host}`}
-              alt="Printer Camera"
-              style={{ width: '100%', height: 'auto', display: 'block', minHeight: '120px' }}
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          </div>
+          {cameraOpen && (
+            <div style={{ background: '#1c2020', borderRadius: '8px', overflow: 'hidden', marginTop: '12px' }}>
+              <img 
+                src={`http://${window.location.hostname || '127.0.0.1'}:7373/camera/${config.id}`}
+                alt="Printer Camera"
+                style={{ width: '100%', height: 'auto', display: 'block', minHeight: '120px' }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+          )}
         </div>
       )}
       <div className="file-title">

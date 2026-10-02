@@ -1,5 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import type { Request, Response } from 'express'
+import { enableSdcpCamera } from './sdcp-ws.js'
 
 const streams = new Map<string, {
   process: ChildProcess,
@@ -7,10 +8,10 @@ const streams = new Map<string, {
   lastActive: number
 }>()
 
-export function handleMjpegStream(req: Request, res: Response) {
-  const printerIp = req.params.ip as string
-  if (!printerIp) {
-    res.status(400).send('IP required')
+export async function handleMjpegStream(req: Request, res: Response) {
+  const printerId = req.params.id as string
+  if (!printerId) {
+    res.status(400).send('ID required')
     return
   }
 
@@ -21,11 +22,11 @@ export function handleMjpegStream(req: Request, res: Response) {
     'Content-Type': 'multipart/x-mixed-replace; boundary=--myboundary'
   })
 
-  let stream = streams.get(printerIp)
+  let stream = streams.get(printerId)
 
   if (!stream) {
     // Start ffmpeg
-    const rtspUrl = `rtsp://${printerIp}:554/stream`
+    const rtspUrl = await enableSdcpCamera(printerId)
     const ffmpeg = spawn('ffmpeg', [
       '-rtsp_transport', 'tcp',
       '-i', rtspUrl,
@@ -41,7 +42,7 @@ export function handleMjpegStream(req: Request, res: Response) {
       clients: new Set(),
       lastActive: Date.now()
     }
-    streams.set(printerIp, stream)
+    streams.set(printerId, stream)
 
     let lastFrame: Buffer | undefined
 
@@ -79,7 +80,7 @@ export function handleMjpegStream(req: Request, res: Response) {
 
     ffmpegMpjpeg.on('close', () => {
       stream!.clients.forEach(client => client.end())
-      streams.delete(printerIp)
+      streams.delete(printerId)
     })
   }
 
@@ -92,7 +93,7 @@ export function handleMjpegStream(req: Request, res: Response) {
       setTimeout(() => {
         if (stream!.clients.size === 0) {
           stream!.process.kill()
-          streams.delete(printerIp)
+          streams.delete(printerId)
         }
       }, 5000) // Keep alive for 5 seconds in case of quick refresh
     }
