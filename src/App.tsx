@@ -178,9 +178,9 @@ function App() {
     }
     
     if (typeof settings.accent === 'string') {
-      document.documentElement.style.setProperty('--mint', settings.accent)
+      document.body.style.setProperty('--mint', settings.accent)
     } else {
-      document.documentElement.style.removeProperty('--mint')
+      document.body.style.removeProperty('--mint')
     }
   }, [settings.theme, settings.accent]);
   useEffect(() => api.onUploadProgress(setUpload), []);
@@ -339,7 +339,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.5</div>
+        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.6</div>
       </aside>
 
       <main className="main">
@@ -1494,17 +1494,6 @@ function SettingsView({
         <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz. Bonjour çalışmıyorsa IP adresini kullanın.", "Scan the QR code to install as a mobile app (PWA) on your device. Use the IP address if Bonjour fails.")}</p>
         
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>
-              <QRCodeSVG value="http://nova-3d-printer-manager.local:7373" size={120} />
-            </div>
-            <p style={{ marginTop: '8px', marginBottom: 0 }}>
-              <a href="http://nova-3d-printer-manager.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
-                nova-3d-printer-manager.local:7373
-              </a>
-            </p>
-          </div>
-
           {Array.isArray(settings.ips) ? (settings.ips as string[]).map((ip: string) => (
             <div key={ip} style={{ textAlign: 'center' }}>
               <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>

@@ -11,7 +11,7 @@
   --muted: #7e8881;
   --soft: #aeb7b0;
   --mint: #a9f4c7;
-  --mint-dark: #0f2a1d;
+  --mint-dark: color-mix(in srgb, var(--mint) 15%, transparent);
   --amber: #f2c069;
   --red: #fa7f79;
 }
@@ -26,7 +26,7 @@ body.theme-light {
   --muted: #6e7a73;
   --soft: #4a544e;
   --mint: #159c55;
-  --mint-dark: #d2f2df;
+  --mint-dark: color-mix(in srgb, var(--mint) 15%, transparent);
   --amber: #b97d09;
   --red: #d93d35;
 }

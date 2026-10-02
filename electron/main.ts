@@ -7,6 +7,7 @@ import { NovaClient } from './nova-client.js'
 import { PrinterStore, SettingsStore } from './store.js'
 import { findMacForIp, startMacTracking } from './mac-tracker.js'
 import { startHttpServer, stopHttpServer } from './http-server.js'
+import os from 'node:os'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const store = new PrinterStore()
@@ -134,9 +135,8 @@ ipcMain.handle('files:choose-upload', async (event, id: string) => {
 ipcMain.handle('settings:get', () => settingsStore.getSettings())
 ipcMain.handle('settings:save', (_event, settings) => settingsStore.saveSettings(settings))
 ipcMain.handle('system:getLocalIps', () => {
-  const os = require('node:os')
   const nets = os.networkInterfaces()
-  const results: string[] = []
+  const results: string[] = ['nova-3d-printer-manager.local']
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]!) {
       if (net.family === 'IPv4' && !net.internal) {
