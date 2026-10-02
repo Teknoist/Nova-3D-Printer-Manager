@@ -777,17 +777,30 @@ export class NovaClient {
       const { sendSdcpCommand, getSdcpStatus } = await import('./sdcp-ws.js')
       
       let cmd: number | undefined
+      let payload: Record<string, unknown> = {}
+
       if (path.includes('/job/toggle/')) {
         const status = getSdcpStatus(printer.id)
         const code = sdcpStatusCode(pick(status ?? {}, ['CurrentStatus', 'currentStatus', 'Status'], 0))
-        // Assume code 3 is paused or check state string. If not printing, maybe it's paused.
-        cmd = code === 3 ? 129 : 128 // 129=resume, 128=pause
+        // 3 = paused, 2 = printing. If 3, send 131 (continue). Else 129 (pause).
+        cmd = code === 3 ? 131 : 129
       } else if (path.includes('/job/stop/')) {
-        cmd = 130 // 130=stop
+        cmd = 130
+      } else if (path.includes('/file/print/')) {
+        cmd = 128
+        const fileName = path.split('/file/print/')[1]
+        // SDCP 3.0 requires full path. Assume /usb/ or /local/ based on our file system if known, but SDCP spec uses full path for printing too.
+        // The GUI passes the file's fullName which includes the prefix if we appended it, or just the filename.
+        // The SDCP V3 spec expects absolute path like /usb/hitwork.ctb or just filename if it resolves it. Let's send the fullName.
+        payload = { Filename: decodeURIComponent(fileName), StartLayer: 0 }
+      } else if (path.includes('/file/delete/')) {
+        cmd = 259
+        const fileName = decodeURIComponent(path.split('/file/delete/')[1])
+        payload = { FileList: [fileName], FolderList: [] }
       }
 
       if (cmd) {
-        await sendSdcpCommand(printer.id, deviceId, mainboardId, cmd, {})
+        await sendSdcpCommand(printer.id, deviceId, mainboardId, cmd, payload)
         return
       }
       throw new Error('SDCP 3.0 yazıcılarda bu komut henüz desteklenmiyor.')

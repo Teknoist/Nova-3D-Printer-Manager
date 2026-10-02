@@ -339,7 +339,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.4</div>
+        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.5</div>
       </aside>
 
       <main className="main">

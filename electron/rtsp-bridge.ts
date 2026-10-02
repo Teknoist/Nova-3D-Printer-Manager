@@ -9,7 +9,9 @@ const streams = new Map<string, {
   lastActive: number
 }>()
 
-export async function handleMjpegStream(req: Request, res: Response) {
+import type { PrinterStore } from './store.js'
+
+export async function handleMjpegStream(req: Request, res: Response, store: PrinterStore) {
   const printerId = req.params.id as string
   if (!printerId) {
     res.status(400).send('ID required')
@@ -26,8 +28,19 @@ export async function handleMjpegStream(req: Request, res: Response) {
   let stream = streams.get(printerId)
 
   if (!stream) {
-    // Start ffmpeg
-    const rtspUrl = await enableSdcpCamera(printerId)
+    let rtspUrl = ''
+    try {
+      const printer = await store.get(printerId)
+      if (printer.protocol === 'sdcp3') {
+        rtspUrl = await enableSdcpCamera(printerId)
+      } else {
+        rtspUrl = `rtsp://${printer.host}:554/stream`
+      }
+    } catch (err) {
+      console.error('Camera init error:', err)
+      res.end()
+      return
+    }
     // We use ffmpegMpjpeg instead of raw ffmpeg. Replace app.asar with app.asar.unpacked since it's an executable
     let ffmpegCmd = typeof ffmpegPath === 'string' ? ffmpegPath : (ffmpegPath as any)?.path ?? 'ffmpeg';
     ffmpegCmd = ffmpegCmd.replace('app.asar', 'app.asar.unpacked');

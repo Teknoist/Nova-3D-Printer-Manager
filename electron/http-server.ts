@@ -34,7 +34,7 @@ export function startHttpServer(store: PrinterStore) {
     res.json(await store.list())
   })
   
-  expressApp.get('/camera/:id', handleMjpegStream)
+  expressApp.get('/camera/:id', (req, res) => handleMjpegStream(req, res, store))
   
   // WebSocket API for PWA
   wss.on('connection', (ws) => {
