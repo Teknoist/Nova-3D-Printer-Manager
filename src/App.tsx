@@ -316,7 +316,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA FLEET · v0.6.0</div>
+        <div className="sidebar-version">NOVA FLEET · v0.6.1</div>
       </aside>
 
       <main className="main">
