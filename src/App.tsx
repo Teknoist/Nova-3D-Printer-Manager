@@ -176,7 +176,13 @@ function App() {
     } else {
       document.body.classList.remove('theme-light')
     }
-  }, [settings.theme]);
+    
+    if (typeof settings.accent === 'string') {
+      document.documentElement.style.setProperty('--mint', settings.accent)
+    } else {
+      document.documentElement.style.removeProperty('--mint')
+    }
+  }, [settings.theme, settings.accent]);
   useEffect(() => api.onUploadProgress(setUpload), []);
   useEffect(() => api.onPrinterIpUpdated((config) => {
     toast(`${config.name} IP adresi değişti: ${config.host}`, 'success');
@@ -1455,6 +1461,29 @@ function SettingsView({
             />
             <span style={{ fontSize: '15px', color: '#eef4ef' }}>{tr("Açık", "Light")}</span>
           </label>
+        </div>
+        <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
+          {[
+            { id: 'mint', color: '#159c55' },
+            { id: 'blue', color: '#3b82f6' },
+            { id: 'purple', color: '#8b5cf6' },
+            { id: 'rose', color: '#f43f5e' }
+          ].map(c => (
+            <button
+              key={c.id}
+              onClick={() => updateSetting("accent", c.color)}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: c.color,
+                border: settings.accent === c.color ? '3px solid white' : 'none',
+                cursor: 'pointer',
+                boxShadow: settings.accent === c.color ? '0 0 0 2px ' + c.color : 'none'
+              }}
+              title={c.id}
+            />
+          ))}
         </div>
       </section>
       <section className="panel settings-card">
