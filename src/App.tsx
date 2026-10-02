@@ -339,7 +339,7 @@ function App() {
             </small>
           </div>
         </div>
-        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.2</div>
+        <div className="sidebar-version">NOVA 3D PRINTER MANAGER · v0.7.3</div>
       </aside>
 
       <main className="main">
@@ -1429,7 +1429,7 @@ function SettingsView({
               onChange={(e) => updateSetting("autoSdcpDiscovery", e.target.checked)}
               style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
             />
-            <span style={{ fontSize: '15px', color: '#eef4ef' }}>
+            <span style={{ fontSize: '15px',  }}>
               {tr("Aktif", "Active")}
             </span>
           </label>
@@ -1449,7 +1449,7 @@ function SettingsView({
               onChange={() => updateSetting("theme", "dark")}
               style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
             />
-            <span style={{ fontSize: '15px', color: '#eef4ef' }}>{tr("Koyu", "Dark")}</span>
+            <span style={{ fontSize: '15px',  }}>{tr("Koyu", "Dark")}</span>
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <input 
@@ -1459,7 +1459,7 @@ function SettingsView({
               onChange={() => updateSetting("theme", "light")}
               style={{ width: '18px', height: '18px', accentColor: '#36d399' }}
             />
-            <span style={{ fontSize: '15px', color: '#eef4ef' }}>{tr("Açık", "Light")}</span>
+            <span style={{ fontSize: '15px',  }}>{tr("Açık", "Light")}</span>
           </label>
         </div>
         <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
@@ -1493,30 +1493,31 @@ function SettingsView({
         <h2>{tr("Mobil Erişim (PWA)", "Mobile Access (PWA)")}</h2>
         <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz. Bonjour çalışmıyorsa IP adresini kullanın.", "Scan the QR code to install as a mobile app (PWA) on your device. Use the IP address if Bonjour fails.")}</p>
         
-        {settings.ips && Array.isArray(settings.ips) && settings.ips.length > 0 ? (
-          settings.ips.map(ip => (
-            <div key={ip} style={{ display: 'inline-block', margin: '8px', textAlign: 'center' }}>
-              <div style={{ background: 'white', padding: '16px', borderRadius: '8px' }}>
-                <QRCodeSVG value={`http://${ip}:7373`} size={140} />
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>
+              <QRCodeSVG value="http://nova-3d-printer-manager.local:7373" size={120} />
+            </div>
+            <p style={{ marginTop: '8px', marginBottom: 0 }}>
+              <a href="http://nova-3d-printer-manager.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
+                nova-3d-printer-manager.local:7373
+              </a>
+            </p>
+          </div>
+
+          {settings.ips && Array.isArray(settings.ips) && settings.ips.map((ip: string) => (
+            <div key={ip} style={{ textAlign: 'center' }}>
+              <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>
+                <QRCodeSVG value={`http://${ip}:7373`} size={120} />
               </div>
               <p style={{ marginTop: '8px', marginBottom: 0 }}>
                 <a href={`http://${ip}:7373`} target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
-                  http://{ip}:7373
+                  {ip}:7373
                 </a>
               </p>
             </div>
-          ))
-        ) : (
-          <div style={{ marginTop: '16px', background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px' }}>
-            <QRCodeSVG value="http://nova-3d-printer-manager.local:7373" size={160} />
-          </div>
-        )}
-        
-        <p style={{ marginTop: '8px' }}>
-          <a href="http://nova-3d-printer-manager.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
-            http://nova-3d-printer-manager.local:7373
-          </a>
-        </p>
+          ))}
+        </div>
       </section>
       <section className="panel settings-card">
         <p className="section-kicker">
@@ -1663,6 +1664,15 @@ function PrinterModal({
               value={form.name}
               onChange={(e) => field("name", e.target.value)}
               placeholder={tr("Örn. Bene4", "e.g. Bene4")}
+            />
+          </label>
+          <label>
+            <span>{tr("Konum / Bölge", "Location / Region")}</span>
+            <input
+              autoComplete="off"
+              value={form.location ?? ""}
+              onChange={(e) => field("location", e.target.value)}
+              placeholder={tr("Örn. Raf 1", "e.g. Shelf 1")}
             />
           </label>
           <label>
