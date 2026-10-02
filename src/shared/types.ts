@@ -11,6 +11,8 @@ export interface PrinterConfig {
   location: string
   pollInterval: number
   enabled: boolean
+  macAddress?: string
+  httpServerEnabled?: boolean
 }
 
 export interface NovaFile {
@@ -78,4 +80,5 @@ export interface NovaFleetApi {
   printFile: (id: string, fileName: string) => Promise<ActionResult>
   controlJob: (id: string, jobId: string, action: 'toggle' | 'stop') => Promise<ActionResult>
   onUploadProgress: (callback: (progress: UploadProgress) => void) => () => void
+  onPrinterIpUpdated: (callback: (config: PrinterConfig) => void) => () => void
 }

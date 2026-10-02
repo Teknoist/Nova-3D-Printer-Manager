@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { NovaFleetApi, SavePrinterInput, UploadProgress } from '../src/shared/types.js'
+import type { NovaFleetApi, SavePrinterInput, UploadProgress, PrinterConfig } from '../src/shared/types.js'
 
 const api: NovaFleetApi = {
   listPrinters: () => ipcRenderer.invoke('printers:list'),
@@ -16,6 +16,11 @@ const api: NovaFleetApi = {
     ipcRenderer.on('upload:progress', listener)
     return () => ipcRenderer.removeListener('upload:progress', listener)
   },
+  onPrinterIpUpdated: (callback: (config: PrinterConfig) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, config: PrinterConfig) => callback(config)
+    ipcRenderer.on('printer-ip-updated', listener)
+    return () => ipcRenderer.removeListener('printer-ip-updated', listener)
+  }
 }
 
 contextBridge.exposeInMainWorld('novaFleet', api)

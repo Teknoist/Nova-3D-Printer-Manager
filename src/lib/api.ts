@@ -41,6 +41,60 @@ const previewApi: NovaFleetApi = {
   printFile: () => ok('Yazdırma işi başlatıldı.'),
   controlJob: () => ok('Yazdırma durumu değiştirildi.'),
   onUploadProgress: () => () => undefined,
+  onPrinterIpUpdated: () => () => undefined,
 }
 
-export const api: NovaFleetApi = window.novaFleet ?? (Capacitor.getPlatform() === 'android' ? androidApi : previewApi)
+function createPwaApi(): NovaFleetApi {
+  let ws: WebSocket | undefined
+  const cbs = new Map<number, { resolve: (data: any) => void; reject: (err: any) => void }>()
+  let msgId = 0
+
+  function getWs(): Promise<WebSocket> {
+    if (ws && ws.readyState === WebSocket.OPEN) return Promise.resolve(ws)
+    return new Promise((resolve, reject) => {
+      const url = `ws://${window.location.host}`
+      const socket = new WebSocket(url)
+      socket.onmessage = (e) => {
+        try {
+          const res = JSON.parse(e.data)
+          const cb = cbs.get(res.id)
+          if (cb) {
+            cbs.delete(res.id)
+            if (res.error) cb.reject(new Error(res.error))
+            else cb.resolve(res.data)
+          }
+        } catch {}
+      }
+      socket.onopen = () => { ws = socket; resolve(ws) }
+      socket.onerror = (e) => reject(new Error('WebSocket connection failed'))
+    })
+  }
+
+  async function request<T>(action: string, payload?: any): Promise<T> {
+    const socket = await getWs()
+    const id = ++msgId
+    return new Promise<T>((resolve, reject) => {
+      cbs.set(id, { resolve, reject })
+      socket.send(JSON.stringify({ id, action, payload }))
+      setTimeout(() => {
+        if (cbs.has(id)) { cbs.delete(id); reject(new Error('PWA API timeout')) }
+      }, 10000)
+    })
+  }
+
+  return {
+    listPrinters: () => request('printers:list'),
+    savePrinter: (input) => request('printers:save', input),
+    removePrinter: (id) => request('printers:remove', id),
+    refreshPrinter: (id) => request('printers:refresh', id),
+    refreshAll: () => request('printers:refresh-all'),
+    chooseAndUpload: () => ok('PWA üzerinden dosya yükleme henüz desteklenmiyor.'),
+    deleteFile: (id, fileName) => request('files:delete', { id, fileName }),
+    printFile: (id, fileName) => request('files:print', { id, fileName }),
+    controlJob: (id, jobId, action) => request('jobs:control', { id, jobId, action }),
+    onUploadProgress: () => () => undefined,
+    onPrinterIpUpdated: () => () => undefined,
+  }
+}
+
+export const api: NovaFleetApi = window.novaFleet ?? (Capacitor.getPlatform() === 'android' ? androidApi : (window.location.port === '7373' ? createPwaApi() : previewApi))

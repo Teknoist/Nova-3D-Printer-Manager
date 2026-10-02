@@ -220,6 +220,7 @@ function sdcpStatusCode(value: unknown) {
 
 function sdcpStateFromCode(code: number) {
   if (code === 2) return 'printing' as const
+  if (code === 3) return 'paused' as const
   if (code >= 64) return 'error' as const
   return 'online' as const
 }
@@ -229,6 +230,7 @@ function sdcpStatusText(code: number) {
     0: 'idle',
     1: 'homing',
     2: 'printing',
+    3: 'paused',
     4: 'file_checking',
   }
   return map[code] ?? `sdcp_status_${code}`
@@ -249,7 +251,7 @@ function normalizeSdcpJob(status: Record<string, unknown>, deviceId: string): Pr
     id: string(pick(printInfo, ['TaskId', 'taskId', 'Id', 'id'], deviceId || 'sdcp-current-job')),
     jobName: string(pick(printInfo, ['Filename', 'FileName', 'filename', 'Name'], 'SDCP print')),
     printInProgress: statusCode === 2,
-    printPaused: false,
+    printPaused: statusCode === 3,
     status: sdcpStatusText(statusCode),
     thickness: number(pick(printInfo, ['LayerHeight', 'layerHeight', 'Thickness'], 0)),
     totalSlices,
@@ -322,6 +324,31 @@ export class NovaClient {
     throw new Error(errors.join(' | ') || 'Yazıcı cevap vermedi.')
   }
 
+  async initializeAll(printers: PrinterConfig[]): Promise<PrinterSnapshot[]> {
+    const results = await Promise.allSettled(
+      printers.map(async (printer) => {
+        return Promise.race([
+          this.snapshot(printer),
+          new Promise<PrinterSnapshot>((_, reject) => 
+            setTimeout(() => reject(new Error('İlk bağlantı zaman aşımı (1500ms).')), 1500)
+          )
+        ]);
+      })
+    );
+
+    return results.map((result, index) => {
+      if (result.status === 'fulfilled') return result.value;
+      return {
+        config: printers[index],
+        state: 'offline',
+        files: [],
+        usedBytes: 0,
+        error: result.reason instanceof Error ? result.reason.message : 'Bağlantı zaman aşımı.',
+        lastSeen: new Date().toISOString(),
+      };
+    });
+  }
+
   async snapshot(printer: PrinterConfig): Promise<PrinterSnapshot> {
     if (printer.host.startsWith('demo-')) return this.demoSnapshot(printer)
     if (printer.protocol === 'sdcp3') return this.sdcpSnapshot(printer)
@@ -389,13 +416,24 @@ export class NovaClient {
       const mainboardId = string(deviceData.MainboardID, '')
       const deviceIp = string(deviceData.MainboardIP, address.host) || address.host
       const deviceId = string(device.Id, mainboardId || address.host)
-      const status = await this.requestSdcpStatus(deviceId, mainboardId, deviceIp, address.port || 3030)
+      
+      // Persistent WS connection
+      const { startSdcpConnection, getSdcpStatus } = await import('./sdcp-ws.js')
+      startSdcpConnection(printer, deviceId, mainboardId, deviceIp, address.port || 3030)
+      
+      // Get cached status or wait slightly if just connected
+      let status = getSdcpStatus(printer.id)
+      if (!status || Object.keys(status).length === 0) {
+        await delay(500)
+        status = getSdcpStatus(printer.id) ?? {}
+      }
+
       const statusCode = sdcpStatusCode(pick(status, ['CurrentStatus', 'currentStatus', 'Status'], 0))
       const activeJob = normalizeSdcpJob(status, deviceId)
       let files: NovaFile[] = []
       let fileError = ''
       try {
-        files = await this.listSdcpFiles(deviceId, mainboardId, deviceIp, address.port || 3030)
+        files = await this.listSdcpFiles(printer.id, deviceId, mainboardId, deviceIp, address.port || 3030)
       } catch (error) {
         fileError = error instanceof Error ? error.message : 'SDCP dosya listesi alınamadı.'
       }
@@ -459,13 +497,15 @@ export class NovaClient {
     })
   }
 
-  private async listSdcpFiles(deviceId: string, mainboardId: string, host: string, port: number): Promise<NovaFile[]> {
+  private async listSdcpFiles(printerId: string, deviceId: string, mainboardId: string, host: string, port: number): Promise<NovaFile[]> {
     const paths = ['/local/', '/usb/', '/local', '/usb', '/']
     const files: NovaFile[] = []
     const errors: string[] = []
+    const { sendSdcpCommand } = await import('./sdcp-ws.js')
+    
     for (const path of paths) {
       try {
-        const result = await this.requestSdcpCommand(deviceId, mainboardId, host, port, 258, { Url: path }, `dosya listesi ${path}`)
+        const result = await sendSdcpCommand(printerId, deviceId, mainboardId, 258, { Url: path })
         const list = pick(result, ['FileList', 'fileList', 'Files', 'files'], [])
         if (Array.isArray(list)) {
           for (const item of list) {
@@ -688,7 +728,30 @@ export class NovaClient {
 
   async command(printer: PrinterConfig, path: string) {
     if (printer.host.startsWith('demo-')) return
-    if (printer.protocol === 'sdcp3') throw new Error('SDCP 3.0 yazıcılarda dosya/iş komutları henüz etkin değil; bağlantı ve durum izleme desteklenir.')
+    if (printer.protocol === 'sdcp3') {
+      const address = cleanAddress(printer)
+      const device = await this.discoverSdcpDevice(address.host)
+      const deviceData = device.Data ?? {}
+      const mainboardId = string(deviceData.MainboardID, '')
+      const deviceId = string(device.Id, mainboardId || address.host)
+      const { sendSdcpCommand, getSdcpStatus } = await import('./sdcp-ws.js')
+      
+      let cmd: number | undefined
+      if (path.includes('/job/toggle/')) {
+        const status = getSdcpStatus(printer.id)
+        const code = sdcpStatusCode(pick(status ?? {}, ['CurrentStatus', 'currentStatus', 'Status'], 0))
+        // Assume code 3 is paused or check state string. If not printing, maybe it's paused.
+        cmd = code === 3 ? 129 : 128 // 129=resume, 128=pause
+      } else if (path.includes('/job/stop/')) {
+        cmd = 130 // 130=stop
+      }
+
+      if (cmd) {
+        await sendSdcpCommand(printer.id, deviceId, mainboardId, cmd, {})
+        return
+      }
+      throw new Error('SDCP 3.0 yazıcılarda bu komut henüz desteklenmiyor.')
+    }
     const servicesFallback = this.commandFallbacks(printer, path)
     await this.requestFirst([{ url: this.url(printer, path), mode: 'nova8081' }, ...servicesFallback], 'GET', 10_000)
   }

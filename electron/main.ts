@@ -2,9 +2,11 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { SavePrinterInput } from '../src/shared/types.js'
+import type { SavePrinterInput, PrinterSnapshot } from '../src/shared/types.js'
 import { NovaClient } from './nova-client.js'
 import { PrinterStore } from './store.js'
+import { findMacForIp, startMacTracking } from './mac-tracker.js'
+import { startHttpServer, stopHttpServer } from './http-server.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const store = new PrinterStore()
@@ -87,11 +89,26 @@ function result(error: unknown) {
   return { ok: false, message: error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.' }
 }
 
+let initialSnapshotsPromise: Promise<PrinterSnapshot[]> | undefined;
+
 ipcMain.handle('printers:list', () => store.list())
-ipcMain.handle('printers:save', (_event, input: SavePrinterInput) => store.save(input))
+ipcMain.handle('printers:save', async (_event, input: SavePrinterInput) => {
+  let macAddress = input.macAddress;
+  if (!macAddress) {
+    macAddress = await findMacForIp(input.host);
+  }
+  return store.save({ ...input, macAddress });
+})
 ipcMain.handle('printers:remove', async (_event, id: string) => { try { await store.remove(id); return { ok: true } } catch (error) { return result(error) } })
 ipcMain.handle('printers:refresh', async (_event, id: string) => client.snapshot(await store.get(id)))
-ipcMain.handle('printers:refresh-all', async () => Promise.all((await store.list()).filter((printer) => printer.enabled).map((printer) => client.snapshot(printer))))
+ipcMain.handle('printers:refresh-all', async () => {
+  if (initialSnapshotsPromise) {
+    const result = await initialSnapshotsPromise;
+    initialSnapshotsPromise = undefined;
+    return result;
+  }
+  return Promise.all((await store.list()).filter((printer) => printer.enabled).map((printer) => client.snapshot(printer)))
+})
 ipcMain.handle('files:delete', async (_event, id: string, fileName: string) => {
   try { await client.command(await store.get(id), `/file/delete/${encodeURIComponent(fileName)}`); return { ok: true, message: 'Dosya silindi.' } }
   catch (error) { return result(error) }
@@ -121,8 +138,24 @@ if (!hasSingleInstanceLock) {
     focusMainWindow()
   })
   app.whenReady().then(() => {
+    // Fire and forget initial parallel connection
+    initialSnapshotsPromise = store.list().then(printers => 
+      client.initializeAll(printers.filter(p => p.enabled))
+    ).catch(() => []);
+    
+    startMacTracking(store, (config) => {
+      if (mainWindow) mainWindow.webContents.send('printer-ip-updated', config)
+    });
+    
+    startHttpServer(store)
+    
     createWindow()
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
   })
 }
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
+app.on('window-all-closed', () => { 
+  if (process.platform !== 'darwin') app.quit() 
+})
+app.on('before-quit', () => {
+  stopHttpServer()
+})

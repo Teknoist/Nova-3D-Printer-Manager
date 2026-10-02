@@ -34,9 +34,11 @@ import type {
   PrinterSnapshot,
   SavePrinterInput,
 } from "./shared/types";
+import { QRCodeSVG } from "qrcode.react";
+
+import { toastQueue, type ToastMessage } from "./lib/notification-queue";
 
 type View = "overview" | "printers" | "files" | "jobs" | "settings";
-type Toast = { id: number; kind: "success" | "error"; text: string };
 
 function statusLabel(state: PrinterSnapshot["state"]) {
   return {
@@ -85,20 +87,23 @@ function App() {
   const [refreshingId, setRefreshingId] = useState<string>();
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<PrinterConfig | "new" | null>(null);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [overflowCount, setOverflowCount] = useState(0);
   const [upload, setUpload] = useState<{
     printerId: string;
     fileName: string;
     percent: number;
   }>();
 
-  const toast = useCallback((text: string, kind: Toast["kind"] = "success") => {
-    const id = Date.now();
-    setToasts((current) => [...current, { id, text, kind }]);
-    window.setTimeout(
-      () => setToasts((current) => current.filter((item) => item.id !== id)),
-      3200,
-    );
+  useEffect(() => {
+    return toastQueue.subscribe((activeToasts, overflow) => {
+      setToasts(activeToasts);
+      setOverflowCount(overflow);
+    });
+  }, []);
+
+  const toast = useCallback((text: string, kind: ToastMessage["kind"] = "success", printerId?: string) => {
+    toastQueue.add(text, kind, printerId);
   }, []);
 
   const refresh = useCallback(
@@ -156,6 +161,10 @@ function App() {
     void refresh();
   }, [refresh]);
   useEffect(() => api.onUploadProgress(setUpload), []);
+  useEffect(() => api.onPrinterIpUpdated((config) => {
+    toast(`${config.name} IP adresi değişti: ${config.host}`, 'success');
+    void refresh(true);
+  }), [refresh, toast]);
   useEffect(() => {
     const intervals = configs
       .filter((item) => item.enabled)
@@ -489,8 +498,14 @@ function App() {
           <div className={`toast ${item.kind}`} key={item.id}>
             {item.kind === "success" ? <Check /> : <AlertTriangle />}
             <span>{item.text}</span>
+            <button className="close-toast" onClick={() => toastQueue.remove(item.id)}><X size={14}/></button>
           </div>
         ))}
+        {overflowCount > 0 && (
+          <div className="toast-overflow">
+            <span>+{overflowCount} işlem daha...</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -970,6 +985,23 @@ function PrinterDetail({
           </div>
         </div>
       )}
+      {config.protocol === "sdcp3" && snapshot.state !== "offline" && (
+        <div className="active-job camera-view" style={{ marginTop: '16px' }}>
+          <div className="active-job-head">
+            <div>
+              <p className="section-kicker">{tr("CANLI KAMERA (RTSP)", "LIVE CAMERA (RTSP)")}</p>
+            </div>
+          </div>
+          <div style={{ background: '#1c2020', borderRadius: '8px', overflow: 'hidden', marginTop: '12px' }}>
+            <img 
+              src={`http://${window.location.hostname || '127.0.0.1'}:7373/camera/${config.host}`}
+              alt="Printer Camera"
+              style={{ width: '100%', height: 'auto', display: 'block', minHeight: '120px' }}
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+        </div>
+      )}
       <div className="file-title">
         <div>
           <p className="section-kicker">
@@ -1373,6 +1405,21 @@ function SettingsView({
             <b>{tr("Yerel", "Local")}</b>
           </span>
         </div>
+      </section>
+      <section className="panel settings-card">
+        <p className="section-kicker">
+          PWA SERVER
+        </p>
+        <h2>{tr("Mobil Erişim (PWA)", "Mobile Access (PWA)")}</h2>
+        <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz.", "Scan the QR code to install as a mobile app (PWA) on your device.")}</p>
+        <div style={{ marginTop: '16px', background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px' }}>
+          <QRCodeSVG value="http://nova-fleet.local:7373" size={160} />
+        </div>
+        <p style={{ marginTop: '8px' }}>
+          <a href="http://nova-fleet.local:7373" target="_blank" rel="noreferrer" style={{ color: '#f2c069', textDecoration: 'none' }}>
+            http://nova-fleet.local:7373
+          </a>
+        </p>
       </section>
       <section className="panel settings-card">
         <p className="section-kicker">

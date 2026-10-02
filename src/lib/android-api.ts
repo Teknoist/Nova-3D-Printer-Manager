@@ -51,4 +51,5 @@ export const androidApi: NovaFleetApi = {
     })
     return () => { active = false; if (handle) void handle.remove() }
   },
+  onPrinterIpUpdated: () => () => undefined,
 }
