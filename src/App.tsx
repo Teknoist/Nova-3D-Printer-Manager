@@ -70,6 +70,8 @@ function Empty({ text }: { text: string }) {
   );
 }
 
+import { CommandPalette } from "./components/CommandPalette";
+
 function App() {
   const [language, setLanguage] = useState<Language>(detectLanguage);
   const changeLanguage = (next: Language) => {
@@ -156,6 +158,18 @@ function App() {
   );
 
   const [settings, setSettings] = useState<Record<string, unknown>>({});
+  const [cmdOpen, setCmdOpen] = useState(false);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCmdOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   useEffect(() => {
     void refresh();
@@ -534,6 +548,19 @@ function App() {
             <span>+{overflowCount} işlem daha...</span>
           </div>
         )}
+        <CommandPalette
+          open={cmdOpen}
+          setOpen={setCmdOpen}
+          setView={setView}
+          openNewPrinterModal={() => setModal("new")}
+          refreshAll={refresh}
+          toggleTheme={() => {
+            const current = settings.theme || "dark";
+            const next = current === "dark" ? "light" : "dark";
+            void api.saveSettings({ ...settings, theme: next });
+            setSettings({ ...settings, theme: next });
+          }}
+        />
       </div>
     </div>
   );
