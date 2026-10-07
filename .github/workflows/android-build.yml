@@ -15,6 +15,7 @@ on:
   push:
     branches:
       - main
+      - new-ui-rebuild
     tags:
       - 'v*'
     paths:
