@@ -1527,7 +1527,7 @@ function SettingsView({
         <h2>{tr("Mobil Erişim (PWA)", "Mobile Access (PWA)")}</h2>
         <p>{tr("Aşağıdaki QR kodu okutarak cihazınıza mobil uygulama (PWA) olarak yükleyebilirsiniz. Bonjour çalışmıyorsa IP adresini kullanın.", "Scan the QR code to install as a mobile app (PWA) on your device. Use the IP address if Bonjour fails.")}</p>
         
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '24px', justifyContent: 'center' }}>
           {Array.isArray(settings.ips) ? (settings.ips as string[]).map((ip: string) => (
             <div key={ip} style={{ textAlign: 'center' }}>
               <div style={{ background: 'white', padding: '16px', borderRadius: '8px', display: 'inline-block' }}>

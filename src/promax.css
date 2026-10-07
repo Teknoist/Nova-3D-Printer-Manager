@@ -17,6 +17,8 @@ body:not(.theme-light) {
     radial-gradient(circle at 85% 30%, rgba(20, 140, 255, 0.08), transparent 30%),
     #050505 !important;
   background-size: 200% 200% !important;
+  background-attachment: fixed !important;
+  min-height: 100vh !important;
   animation: mesh 20s ease infinite !important;
   color: #fff !important;
   font-family: 'Inter', 'Manrope', system-ui, sans-serif !important;
@@ -53,7 +55,7 @@ body:not(.theme-light) {
 .topbar h1 {
   font-size: 28px !important;
   font-weight: 800 !important;
-  background: linear-gradient(90deg, #fff, #a9f4c7);
+  background: linear-gradient(90deg, #fff, var(--mint));
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   letter-spacing: -0.03em !important;
@@ -86,7 +88,7 @@ body:not(.theme-light) {
 
 .status.online {
   background: rgba(169, 244, 199, 0.1) !important;
-  color: #a9f4c7 !important;
+  color: var(--mint) !important;
   border: 1px solid rgba(169, 244, 199, 0.5) !important;
   box-shadow: 0 0 15px rgba(169, 244, 199, 0.3) !important;
 }
@@ -100,8 +102,8 @@ body:not(.theme-light) {
 }
 
 .progress i {
-  background: linear-gradient(90deg, #a9f4c7, #20ff8c) !important;
-  box-shadow: 0 0 10px #a9f4c7 !important;
+  background: linear-gradient(90deg, var(--mint), var(--mint)) !important;
+  box-shadow: 0 0 10px var(--mint) !important;
   border-radius: 6px !important;
   position: relative !important;
 }
@@ -121,14 +123,18 @@ body:not(.theme-light) {
 
 /* 6. Buttons */
 .primary-button {
-  background: linear-gradient(135deg, #a9f4c7, #4bc985) !important;
+  background: linear-gradient(135deg, var(--mint), var(--mint-dark)) !important;
   color: #000 !important;
   font-weight: 700 !important;
   border: none !important;
   border-radius: 12px !important;
-  box-shadow: 0 5px 15px rgba(169, 244, 199, 0.4) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
 }
 
 .primary-button:hover {
@@ -162,9 +168,9 @@ body:not(.theme-light) {
 
 .nav-item.active {
   background: linear-gradient(90deg, rgba(169, 244, 199, 0.2), transparent) !important;
-  color: #a9f4c7 !important;
+  color: var(--mint) !important;
   box-shadow: none !important;
-  border-left: 3px solid #a9f4c7 !important;
+  border-left: 3px solid var(--mint) !important;
 }
 
 /* 8. Table & Lists */
@@ -172,7 +178,7 @@ th {
   background: transparent !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   font-weight: 700 !important;
-  color: #a9f4c7 !important;
+  color: var(--mint) !important;
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
 }
@@ -255,6 +261,8 @@ body.theme-light {
     radial-gradient(circle at 15% 50%, rgba(20, 255, 140, 0.1), transparent 30%),
     radial-gradient(circle at 85% 30%, rgba(20, 140, 255, 0.1), transparent 30%),
     #f8f9fa !important;
+  background-attachment: fixed !important;
+  min-height: 100vh !important;
   color: #111 !important;
 }
 
@@ -297,20 +305,9 @@ body.theme-light tr:hover td {
   background: rgba(0, 0, 0, 0.02) !important;
 }
 
-body.theme-light 
-  .top-actions .primary-button {
-    width: 42px !important;
-    height: 42px !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-  .top-actions .primary-button svg {
-    margin: 0 !important;
-  }
 
-  .mobile-nav {
+
+body.theme-light .mobile-nav {
   background: rgba(255, 255, 255, 0.9) !important;
   border-top: 1px solid rgba(0,0,0,0.1) !important;
 }
