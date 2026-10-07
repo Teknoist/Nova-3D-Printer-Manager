@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -709,14 +710,14 @@ function Metric({
   tone: string;
 }) {
   return (
-    <div className="metric">
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="metric">
       <div className={`metric-icon ${tone}`}>{icon}</div>
       <div>
         <span>{label}</span>
         <strong>{value}</strong>
         <small>{note}</small>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -731,7 +732,13 @@ function PrinterCard({
 }) {
   const { config, activeJob } = snapshot;
   return (
-    <article className={`printer-card ${snapshot.state}`} onClick={open}>
+    <motion.article 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.4 }} 
+      className={`printer-card ${snapshot.state}`} 
+      onClick={open}
+    >
       <div className="card-top">
         <div className="printer-art">
           <Printer />
@@ -806,7 +813,7 @@ function PrinterCard({
           <Upload size={15} /> {tr("Dosya yükle", "Upload file")}
         </button>
       </div>
-    </article>
+    </motion.article>
   );
 }
 

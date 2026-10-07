@@ -1,0 +1,89 @@
+function PrinterCard({
+  snapshot,
+  open,
+  upload,
+}: {
+  snapshot: PrinterSnapshot;
+  open: () => void;
+  upload: () => void;
+}) {
+  const { config, activeJob } = snapshot;
+  return (
+    <article className={`printer-card ${snapshot.state}`} onClick={open}>
+      <div className="card-top">
+        <div className="printer-art">
+          <Printer />
+        </div>
+        <div className="card-menu">
+          <span className={`status ${snapshot.state}`}>
+            <i />
+            {statusLabel(snapshot.state)}
+          </span>
+        </div>
+      </div>
+      <div className="printer-identity">
+        <h3>{config.name}</h3>
+        <p>{config.model}</p>
+      </div>
+      {activeJob ? (
+        <div className="job-box">
+          <div>
+            <span>{activeJob.jobName}</span>
+            <b>%{activeJob.progress.toFixed(1)}</b>
+          </div>
+          <div className="progress">
+            <i style={{ width: `${activeJob.progress}%` }} />
+          </div>
+          <div className="job-meta">
+            <span>
+              Katman {activeJob.currentSlice} / {activeJob.totalSlices}
+            </span>
+            <span>
+              ~
+              {formatDuration(
+                (activeJob.totalSlices - activeJob.currentSlice) *
+                  activeJob.averageSliceTime,
+              )}
+            </span>
+          </div>
+        </div>
+      ) : snapshot.state === "offline" ? (
+        <div className="offline-box">
+          <WifiOff size={17} />
+          <span>
+            {snapshot.error ?? tr("Bağlantı kurulamadı", "Connection failed")}
+          </span>
+        </div>
+      ) : (
+        <div className="ready-box">
+          <div>
+            <span>{tr("Depolama", "Storage")}</span>
+            <strong>{formatBytes(snapshot.usedBytes)}</strong>
+          </div>
+          <div>
+            <span>{tr("Dosyalar", "Files")}</span>
+            <strong>{snapshot.files.length}</strong>
+          </div>
+          <div>
+            <span>{tr("Gecikme", "Latency")}</span>
+            <strong>{snapshot.latency} ms</strong>
+          </div>
+        </div>
+      )}
+      <div className="card-footer">
+        <span>
+          {config.host}:{config.port}
+        </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            upload();
+          }}
+          disabled={snapshot.state === "offline"}
+        >
+          <Upload size={15} /> {tr("Dosya yükle", "Upload file")}
+        </button>
+      </div>
+    </article>
+  );
+}
