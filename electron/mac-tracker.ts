@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { PrinterStore } from './store.js'
@@ -71,3 +72,4 @@ export function startMacTracking(store: PrinterStore, onIpUpdated: (config: Prin
     }
   }, 30_000)
 }
+

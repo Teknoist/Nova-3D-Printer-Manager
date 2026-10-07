@@ -9,10 +9,8 @@ import {
   Clock3,
   FileBox,
   Gauge,
-  HardDrive,
   LayoutDashboard,
   LoaderCircle,
-  MapPin,
   Pause,
   Play,
   Plus,
@@ -165,7 +163,9 @@ function App() {
       let ips: string[] = [];
       try {
         if (api.getLocalIps) ips = await api.getLocalIps();
-      } catch (err) {}
+      } catch {
+        // ignore
+      }
       setSettings({ ...s, ips });
     });
   }, [refresh]);

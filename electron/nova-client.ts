@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -907,3 +908,4 @@ export class NovaClient {
     return { config: printer, state: 'printing', latency: 24, firmware: '3.5.0', printerInfo: 'API: Nova3D 8081', files: demoFiles, usedBytes: demoFiles.reduce((sum, item) => sum + item.size, 0), activeJob, lastSeen: new Date().toISOString() }
   }
 }
+

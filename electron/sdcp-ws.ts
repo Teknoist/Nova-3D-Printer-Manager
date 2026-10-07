@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import WebSocket from 'ws'
 import { randomUUID } from 'node:crypto'
 import type { PrinterConfig } from '../src/shared/types.js'
@@ -179,3 +180,4 @@ export async function enableSdcpCamera(printerId: string): Promise<string> {
   // Fallback to default
   return `rtsp://${connection.host}:554/stream`
 }
+

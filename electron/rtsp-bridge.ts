@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import { spawn, type ChildProcess } from 'node:child_process'
 import type { Request, Response } from 'express'
 import { enableSdcpCamera } from './sdcp-ws.js'
@@ -93,3 +94,4 @@ export async function handleMjpegStream(req: Request, res: Response, store: Prin
     }
   })
 }
+

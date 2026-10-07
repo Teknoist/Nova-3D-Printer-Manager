@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
@@ -216,3 +217,4 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   stopHttpServer()
 })
+

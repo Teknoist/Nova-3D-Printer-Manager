@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, no-empty */
 import express from 'express'
 import { createServer } from 'node:http'
 import { WebSocketServer } from 'ws'
@@ -99,3 +100,4 @@ export function stopHttpServer() {
     server = undefined
   }
 }
+

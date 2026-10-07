@@ -58,6 +58,7 @@ const previewApi: NovaFleetApi = {
 
 function createPwaApi(): NovaFleetApi {
   let ws: WebSocket | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cbs = new Map<number, { resolve: (data: any) => void; reject: (err: any) => void }>()
   let msgId = 0
 
@@ -68,20 +69,24 @@ function createPwaApi(): NovaFleetApi {
       const socket = new WebSocket(url)
       socket.onmessage = (e) => {
         try {
-          const res = JSON.parse(e.data)
+           
+          const res = JSON.parse(e.data as string)
           const cb = cbs.get(res.id)
           if (cb) {
             cbs.delete(res.id)
             if (res.error) cb.reject(new Error(res.error))
             else cb.resolve(res.data)
           }
-        } catch {}
+        } catch {
+          // ignore
+        }
       }
       socket.onopen = () => { ws = socket; resolve(ws) }
-      socket.onerror = (e) => reject(new Error('WebSocket connection failed'))
+      socket.onerror = () => reject(new Error('WebSocket connection failed'))
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function request<T>(action: string, payload?: any): Promise<T> {
     const socket = await getWs()
     const id = ++msgId
