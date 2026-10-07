@@ -6,6 +6,7 @@ import "@fontsource/manrope/600.css";
 import "@fontsource/manrope/700.css";
 import "@fontsource/dm-mono/500.css";
 import "./styles.css";
+import "./promax.css";
 import App from "./App";
 import { applyLanguage, detectLanguage } from "./lib/i18n";
 
