@@ -1,6 +1,6 @@
 {
   "name": "nova-3d-printer-manager",
-  "version": "0.7.12",
+  "version": "0.8.0",
   "private": true,
   "author": "Teknoist",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron .",
-    "package:win": "npm run build && electron-builder --win nsis --publish never",
+    "package:win": "npm run build && electron-builder --win nsis zip --publish never",
     "android:sync": "npm run build:web && cap sync android"
   },
   "dependencies": {
@@ -85,15 +85,18 @@
     ],
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "zip"
       ],
       "icon": "build/icon.png"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
+      "runAfterFinish": false,
       "artifactName": "Nova-3D-Printer-Manager-Setup-${version}.${ext}"
     }
   }

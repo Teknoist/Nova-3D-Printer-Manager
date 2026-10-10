@@ -14,6 +14,13 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const store = new PrinterStore()
 const settingsStore = new SettingsStore()
 const client = new NovaClient()
+
+// Handle installer events - quit immediately if this is an installer invocation
+const isInstallerEvent = process.argv.some(arg => arg.startsWith('--squirrel') || arg === '--updated' || arg === '--install' || arg === '--uninstall')
+if (isInstallerEvent) {
+  app.quit()
+}
+
 const hasSingleInstanceLock = app.requestSingleInstanceLock()
 let mainWindow: BrowserWindow | undefined
 
